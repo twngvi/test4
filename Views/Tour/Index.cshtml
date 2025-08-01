@@ -1,0 +1,55 @@
+@model IEnumerable<test4.Models.TourViewModel>
+
+@{
+    ViewData["Title"] = "Tours";
+}
+
+<h1>Tours</h1>
+
+<p>
+    <a asp-action="Create" class="btn btn-primary">Create New Tour</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Tour Name</th>
+            <th>Duration (Days)</th>
+            <th>Price</th>
+            <th>Destinations</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>@Html.DisplayFor(modelItem => item.TourName)</td>
+            <td>
+                @if(item.Duration.HasValue)
+                {
+                    @item.Duration.Value
+                }
+                else
+                {
+                    <span class="text-muted">Not specified</span>
+                }
+            </td>
+            <td>
+                @if(item.Price.HasValue)
+                {
+                    @item.Price.Value.ToString("C")
+                }
+                else
+                {
+                    <span class="text-muted">Not specified</span>
+                }
+            </td>
+            <td>@item.DestinationCount destination(s)</td>
+            <td>
+                <a asp-action="Edit" asp-route-id="@item.TourId" class="btn btn-sm btn-warning">Edit</a>
+                <a asp-action="Details" asp-route-id="@item.TourId" class="btn btn-sm btn-info">Details</a>
+                <a asp-action="Delete" asp-route-id="@item.TourId" class="btn btn-sm btn-danger">Delete</a>
+            </td>
+        </tr>
+}
+    </tbody>
+</table>

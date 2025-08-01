@@ -1,0 +1,71 @@
+@model test4.Models.TourViewModel
+
+@{
+    ViewData["Title"] = "Tour Details";
+}
+
+<h1>Tour Details</h1>
+
+<div>
+    <h4>Tour Information</h4>
+    <hr />
+    <dl class="row">
+        <dt class="col-sm-2">Tour Name</dt>
+        <dd class="col-sm-10">@Html.DisplayFor(model => model.TourName)</dd>
+        
+        <dt class="col-sm-2">Duration</dt>
+        <dd class="col-sm-10">
+            @if(Model.Duration.HasValue)
+            {
+                @Model.Duration.Value <text>days</text>
+            }
+            else
+            {
+                <span class="text-muted">Not specified</span>
+            }
+        </dd>
+        
+        <dt class="col-sm-2">Price</dt>
+        <dd class="col-sm-10">
+            @if(Model.Price.HasValue)
+            {
+                @Model.Price.Value.ToString("C")
+            }
+            else
+            {
+                <span class="text-muted">Not specified</span>
+            }
+        </dd>
+        
+        <dt class="col-sm-2">Destinations</dt>
+        <dd class="col-sm-10">@Model.DestinationCount destination(s)</dd>
+    </dl>
+</div>
+
+@if(Model.Destinations.Any())
+{
+    <div class="mt-4">
+        <h5>Destinations</h5>
+        <div class="row">
+            @foreach(var destination in Model.Destinations)
+            {
+                <div class="col-md-4 mb-3">
+                    <div class="card">
+                        <div class="card-body">
+                            <h6 class="card-title">@destination.DestinationName</h6>
+                            @if(!string.IsNullOrEmpty(destination.City))
+                            {
+                                <p class="card-text"><small class="text-muted">@destination.City</small></p>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+}
+
+<div class="mt-3">
+    <a asp-action="Edit" asp-route-id="@Model.TourId" class="btn btn-warning">Edit</a>
+    <a asp-action="Index" class="btn btn-secondary">Back to List</a>
+</div>
