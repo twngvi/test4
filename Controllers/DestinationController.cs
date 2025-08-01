@@ -16,12 +16,39 @@ namespace test4.Controllers
         }
 
         // GET: Destination
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string searchTerm)
         {
-            var destinations = await _context.Destinations
-                .Include(d => d.Tour)
-                .ToListAsync();
-            return View(destinations);
+            var destinations = await GetDestinationsAsync(searchTerm);
+            
+            var viewModel = new DestinationSearchViewModel
+            {
+                SearchTerm = searchTerm ?? string.Empty,
+                Destinations = destinations
+            };
+            
+            return View(viewModel);
+        }
+
+        // AJAX search endpoint
+        [HttpGet]
+        public async Task<IActionResult> SearchDestinations(string searchTerm)
+        {
+            var destinations = await GetDestinationsAsync(searchTerm);
+            return PartialView("_DestinationResults", destinations);
+        }
+
+        private async Task<List<Destination>> GetDestinationsAsync(string searchTerm)
+        {
+            var query = _context.Destinations.Include(d => d.Tour).AsQueryable();
+
+            if (!string.IsNullOrEmpty(searchTerm))
+            {
+                query = query.Where(d => 
+                    d.DestinationName.Contains(searchTerm) || 
+                    (d.City != null && d.City.Contains(searchTerm)));
+            }
+
+            return await query.ToListAsync();
         }
 
         // GET: Destination/Details/5

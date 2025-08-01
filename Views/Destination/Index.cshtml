@@ -1,4 +1,4 @@
-@model IEnumerable<test4.Data.Destination>
+@model test4.ViewModels.DestinationSearchViewModel
 
 @{
     ViewData["Title"] = "Destinations";
@@ -6,30 +6,58 @@
 
 <h1>Destinations</h1>
 
-<p>
-    <a asp-action="Create" class="btn btn-primary">Create New</a>
-</p>
-<table class="table">
-    <thead>
-        <tr>
-            <th>@Html.DisplayNameFor(model => model.DestinationName)</th>
-            <th>@Html.DisplayNameFor(model => model.City)</th>
-            <th>@Html.DisplayNameFor(model => model.Tour)</th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>@Html.DisplayFor(modelItem => item.DestinationName)</td>
-            <td>@Html.DisplayFor(modelItem => item.City)</td>
-            <td>@Html.DisplayFor(modelItem => item.Tour.TourName)</td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.DestinationId" class="btn btn-sm btn-warning">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.DestinationId" class="btn btn-sm btn-info">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.DestinationId" class="btn btn-sm btn-danger">Delete</a>
-            </td>
-        </tr>
+<div class="row mb-3">
+    <div class="col-md-6">
+        <p>
+            <a asp-action="Create" class="btn btn-primary">Create New</a>
+        </p>
+    </div>
+    <div class="col-md-6">
+        <div class="input-group">
+            <input type="text" id="searchBox" class="form-control" placeholder="Search by destination name or city..." value="@Model.SearchTerm" />
+            <div class="input-group-append">
+                <button class="btn btn-outline-secondary" type="button" id="clearSearch">Clear</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="searchResults">
+    @await Html.PartialAsync("_DestinationResults", Model.Destinations)
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            let searchTimeout;
+            
+            $('#searchBox').on('input', function () {
+                clearTimeout(searchTimeout);
+                const searchTerm = $(this).val();
+                
+                searchTimeout = setTimeout(function () {
+                    performSearch(searchTerm);
+                }, 500); // Delay search by 500ms to avoid too many requests
+            });
+            
+            $('#clearSearch').on('click', function () {
+                $('#searchBox').val('');
+                performSearch('');
+            });
+            
+            function performSearch(searchTerm) {
+                $.ajax({
+                    url: '@Url.Action("SearchDestinations", "Destination")',
+                    type: 'GET',
+                    data: { searchTerm: searchTerm },
+                    success: function (data) {
+                        $('#searchResults').html(data);
+                    },
+                    error: function () {
+                        $('#searchResults').html('<div class="alert alert-danger">An error occurred while searching.</div>');
+                    }
+                });
+            }
+        });
+    </script>
 }
-    </tbody>
-</table>
