@@ -1,31 +1,32 @@
 @model test4.ViewModels.DestinationViewModel
 
 @{
-    ViewData["Title"] = "Create";
+    ViewData["Title"] = "Tạo mới Destination";
 }
 
-<h1>Create</h1>
+<h1>Tạo mới</h1>
 
 <h4>Destination</h4>
 <hr />
 <div class="row">
     <div class="col-md-4">
-        <form asp-action="Create">
+        <form asp-action="Create" enctype="multipart/form-data">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="form-group">
-                <label asp-for="Destination.DestinationName" class="control-label"></label>
+                <label asp-for="Destination.DestinationName" class="control-label">Tên điểm đến</label>
                 <input asp-for="Destination.DestinationName" class="form-control" />
                 <span asp-validation-for="Destination.DestinationName" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="Destination.City" class="control-label"></label>
+                <label asp-for="Destination.City" class="control-label">Thành phố</label>
                 <input asp-for="Destination.City" class="form-control" />
                 <span asp-validation-for="Destination.City" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="Destination.PhotoPath" class="control-label"></label>
-                <input asp-for="Destination.PhotoPath" class="form-control" />
-                <span asp-validation-for="Destination.PhotoPath" class="text-danger"></span>
+                <label asp-for="PhotoFile" class="control-label">Chọn ảnh</label>
+                <input asp-for="PhotoFile" type="file" class="form-control" accept=".jpg,.jpeg,.png" />
+                <span asp-validation-for="PhotoFile" class="text-danger"></span>
+                <small class="form-text text-muted">Chỉ chấp nhận file JPG và PNG. Kích thước tối đa: 2MB</small>
             </div>
             <div class="form-group">
                 <label asp-for="Destination.TourId" class="control-label">Tour</label>
@@ -35,12 +36,13 @@
                 <span asp-validation-for="Destination.TourId" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <input type="submit" value="Create" class="btn btn-primary" />
+                <input type="submit" value="Tạo mới" class="btn btn-primary" />
             </div>
         </form>
     </div>
 </div>
 
 <div>
-    <a asp-action="Index">Back to List</a>
+    <a asp-action="Index">Quay lại</a>
+</div>
 </div>

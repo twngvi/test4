@@ -9,10 +9,12 @@ namespace test4.Controllers
     public class DestinationController : Controller
     {
         private readonly Test4Context _context;
+        private readonly IWebHostEnvironment _webHostEnvironment;
 
-        public DestinationController(Test4Context context)
+        public DestinationController(Test4Context context, IWebHostEnvironment webHostEnvironment)
         {
             _context = context;
+            _webHostEnvironment = webHostEnvironment;
         }
 
         // GET: Destination
@@ -86,8 +88,25 @@ namespace test4.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(DestinationViewModel viewModel)
         {
+            // Kiểm tra và validate file ảnh nếu được upload
+            if (viewModel.PhotoFile != null)
+            {
+                var validationResult = ValidatePhotoFile(viewModel.PhotoFile);
+                if (!validationResult.IsValid)
+                {
+                    ModelState.AddModelError("PhotoFile", validationResult.ErrorMessage);
+                }
+            }
+
             if (ModelState.IsValid)
             {
+                // Xử lý upload ảnh
+                if (viewModel.PhotoFile != null)
+                {
+                    var photoPath = await SavePhotoAsync(viewModel.PhotoFile);
+                    viewModel.Destination.PhotoPath = photoPath;
+                }
+
                 _context.Add(viewModel.Destination);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
@@ -128,10 +147,33 @@ namespace test4.Controllers
                 return NotFound();
             }
 
+            // Kiểm tra và validate file ảnh nếu được upload
+            if (viewModel.PhotoFile != null)
+            {
+                var validationResult = ValidatePhotoFile(viewModel.PhotoFile);
+                if (!validationResult.IsValid)
+                {
+                    ModelState.AddModelError("PhotoFile", validationResult.ErrorMessage);
+                }
+            }
+
             if (ModelState.IsValid)
             {
                 try
                 {
+                    // Xử lý upload ảnh mới
+                    if (viewModel.PhotoFile != null)
+                    {
+                        // Xóa ảnh cũ nếu có
+                        if (!string.IsNullOrEmpty(viewModel.Destination.PhotoPath))
+                        {
+                            DeletePhoto(viewModel.Destination.PhotoPath);
+                        }
+                        
+                        var photoPath = await SavePhotoAsync(viewModel.PhotoFile);
+                        viewModel.Destination.PhotoPath = photoPath;
+                    }
+
                     _context.Update(viewModel.Destination);
                     await _context.SaveChangesAsync();
                 }
@@ -180,6 +222,12 @@ namespace test4.Controllers
             var destination = await _context.Destinations.FindAsync(id);
             if (destination != null)
             {
+                // Xóa ảnh liên quan nếu có
+                if (!string.IsNullOrEmpty(destination.PhotoPath))
+                {
+                    DeletePhoto(destination.PhotoPath);
+                }
+                
                 _context.Destinations.Remove(destination);
             }
 
@@ -201,8 +249,63 @@ namespace test4.Controllers
                 Text = t.TourName
             }).ToList();
             
-            selectList.Insert(0, new SelectListItem { Value = "", Text = "-- Select Tour --" });
+            selectList.Insert(0, new SelectListItem { Value = "", Text = "-- Chọn Tour --" });
             return selectList;
         }
+
+        #region Photo Upload Methods
+
+        private (bool IsValid, string ErrorMessage) ValidatePhotoFile(IFormFile file)
+        {
+            // Kiểm tra kích thước file (tối đa 2MB)
+            if (file.Length > 2 * 1024 * 1024)
+            {
+                return (false, "Kích thước file phải nhỏ hơn 2MB");
+            }
+
+            // Kiểm tra loại file
+            var allowedExtensions = new[] { ".jpg", ".jpeg", ".png" };
+            var fileExtension = Path.GetExtension(file.FileName).ToLowerInvariant();
+            
+            if (!allowedExtensions.Contains(fileExtension))
+            {
+                return (false, "Chỉ chấp nhận file JPG và PNG");
+            }
+
+            return (true, string.Empty);
+        }
+
+        private async Task<string> SavePhotoAsync(IFormFile file)
+        {
+            // Tạo tên file duy nhất sử dụng GUID
+            var fileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
+            var uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "images", "destinations");
+            var filePath = Path.Combine(uploadsFolder, fileName);
+
+            // Đảm bảo thư mục tồn tại
+            Directory.CreateDirectory(uploadsFolder);
+
+            using (var fileStream = new FileStream(filePath, FileMode.Create))
+            {
+                await file.CopyToAsync(fileStream);
+            }
+
+            return $"/images/destinations/{fileName}";
+        }
+
+        private void DeletePhoto(string photoPath)
+        {
+            if (string.IsNullOrEmpty(photoPath)) return;
+
+            var fileName = Path.GetFileName(photoPath);
+            var filePath = Path.Combine(_webHostEnvironment.WebRootPath, "images", "destinations", fileName);
+
+            if (System.IO.File.Exists(filePath))
+            {
+                System.IO.File.Delete(filePath);
+            }
+        }
+
+        #endregion
     }
 }
