@@ -1,0 +1,46 @@
+@model test4.ViewModels.DestinationViewModel
+
+@{
+    ViewData["Title"] = "Create";
+}
+
+<h1>Create</h1>
+
+<h4>Destination</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Create">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group">
+                <label asp-for="Destination.DestinationName" class="control-label"></label>
+                <input asp-for="Destination.DestinationName" class="form-control" />
+                <span asp-validation-for="Destination.DestinationName" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Destination.City" class="control-label"></label>
+                <input asp-for="Destination.City" class="form-control" />
+                <span asp-validation-for="Destination.City" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Destination.PhotoPath" class="control-label"></label>
+                <input asp-for="Destination.PhotoPath" class="form-control" />
+                <span asp-validation-for="Destination.PhotoPath" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Destination.TourId" class="control-label">Tour</label>
+                <select asp-for="Destination.TourId" asp-items="Model.Tours" class="form-control">
+                   
+                </select>
+                <span asp-validation-for="Destination.TourId" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Create" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
